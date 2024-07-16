@@ -1,0 +1,25 @@
+{
+  "name": "Scrim-s0g60phfp0",
+  "description": "https://v2.scrimba.com/learn-react-c0e/~04c",
+  "scripts": {
+    "watch": "webpack -w",
+    "build": "webpack"
+  },
+  "dependencies": {
+    "firebase": "^10.12.3",
+    "nanoid": "3.1.28",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "react-mde": "11.5.0",
+    "react-split": "2.0.13",
+    "showdown": "1.9.1",
+    "webpack": "^2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "babel-core": "^6.0",
+    "babel-loader": "^7.0",
+    "babel-preset-env": "*",
+    "babel-preset-react": "*"
+  }
+}
