@@ -12,7 +12,7 @@ export default function Sidebar(props: any): React.JSX.Element {
                 onClick={() => props.setCurrentNoteId(note.id)}
             >
                 <h4 className="text-snippet">Note {note.body.split("\n")[0]}</h4>
-                <button className="delete-btn" onClick={(event) => props.deleteNote(event, note.id)}
+                <button className="delete-btn" onClick={() => props.deleteNote(note.id)}
                 >
                     <i className="gg-trash trash-icon"></i>
                 </button>

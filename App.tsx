@@ -2,9 +2,9 @@ import React from "react"
 import Sidebar from "./components/Sidebar"
 import Editor from "./components/Editor"
 import Split from "react-split"
-import {nanoid} from "nanoid"
-import { onSnapshot } from "firebase/firestore"
-import {notesCollection} from "./firebase.tsx"
+import { nanoid } from "nanoid" // no longer in use
+import { onSnapshot, addDoc, deleteDoc, doc } from "firebase/firestore"
+import { notesCollection, db } from "./firebase.tsx"
 
 export default function App(): React.JSX.Element {
     const [notes, setNotes]: [notes: any, setNotes: any] = React.useState( () => JSON.parse(localStorage.getItem("notes")!) || [] )
@@ -33,22 +33,25 @@ export default function App(): React.JSX.Element {
     
 
 
-    function createNewNote(): void {
-        const newNote: {id: string, body: string} = {
-            id: nanoid(),
+    async function createNewNote(): Promise<void> {
+        /*
+            Create a new note in the Firestore database.  The Note ID will be created by the database. 
+            Wait for the database to create the new note, then proceed.
+        */
+        const newNote: {body: string} = {
             body: "# Title"
         }
-        setNotes(prevNotes => [newNote, ...prevNotes])
-        setCurrentNoteId(newNote.id)
+        const awaitNewDoc = await addDoc(notesCollection, newNote);
+        setCurrentNoteId(awaitNewDoc.id);
     }
 
-    function deleteNote(event, noteId): void {
+    async function deleteNote(noteId): Promise<void> {
         /*
             Event received from Sidebar component.  We know the note's ID from user input on the Sidebar when trash-icon is clicked.
-            Only keep the notes that DO NOT have that clicked on note's ID; filter out the note with the matching ID.
+            Create a reference to the note in the database with that id then delete it.
         */
-        event.stopPropagation();
-        setNotes(oldNotes => oldNotes.filter((note) => note.id !== noteId));
+        const docRef = doc(db, "notes", noteId);
+        await deleteDoc(docRef);
     }
     
     function updateNote(text: string): any[] {
