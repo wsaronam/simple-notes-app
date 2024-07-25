@@ -3,16 +3,21 @@ import Sidebar from "./components/Sidebar"
 import Editor from "./components/Editor"
 import Split from "react-split"
 import { nanoid } from "nanoid" // no longer in use
-import { onSnapshot, addDoc, deleteDoc, doc } from "firebase/firestore"
+import { onSnapshot, addDoc, setDoc, deleteDoc, doc } from "firebase/firestore"
 import { notesCollection, db } from "./firebase.tsx"
 
+
+
+
 export default function App(): React.JSX.Element {
-    const [notes, setNotes]: [notes: any, setNotes: any] = React.useState( () => JSON.parse(localStorage.getItem("notes")!) || [] )
-    const [currentNoteId, setCurrentNoteId]: [currentNoteId: number, setCurrentNodeId: any] = React.useState(
-        (notes[0] && notes[0].id) || ""
-    )
+    const [notes, setNotes]: [notes: any, setNotes: any] = React.useState([])
+    const [currentNoteId, setCurrentNoteId]: any = React.useState("")
 
     const currentNote = notes.find(note => note.id === currentNoteId) || notes[0]
+
+    // sort notes array by most recently updated
+    const notesArrSortedByUpdatedAt: any[] = notes.sort((a, b) => b.updatedAt - a.updatedAt); 
+
 
     // Initialize Notes program with a snapshot of the Notes data from our Firebase db
     React.useEffect(() => {
@@ -26,6 +31,13 @@ export default function App(): React.JSX.Element {
         return unsubscribe
     }, [])
 
+    // Set the current note to the first if there isn't a note selected
+    React.useEffect(() => {
+        if (!currentNoteId) {
+            setCurrentNoteId(notes[0]?.id);
+        }
+    }, [notes])
+
     // React.useEffect(() => {
     //     localStorage.setItem("notes", JSON.stringify(notes))
     // }, [notes])
@@ -38,7 +50,9 @@ export default function App(): React.JSX.Element {
             Create a new note in the Firestore database.  The Note ID will be created by the database. 
             Wait for the database to create the new note, then proceed.
         */
-        const newNote: {body: string} = {
+        const newNote: {createdAt: number, updatedAt: number, body: string} = {
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
             body: "# Title"
         }
         const awaitNewDoc = await addDoc(notesCollection, newNote);
@@ -54,25 +68,12 @@ export default function App(): React.JSX.Element {
         await deleteDoc(docRef);
     }
     
-    function updateNote(text: string): any[] {
+    async function updateNote(text: string): Promise<void> {
         /* 
-            When the notes are updated, if the note being updated in not the first in the list of notes, it will be moved
-            to the first position.  The updatedArr will be the new order of the notes.
+            Using the currentNoteId, we update the note in the Firebase with what we have in our application.
         */
-        const updatedArr: any[] = []
-        setNotes(oldNotes => {
-            for (let i = 0; i < oldNotes.length; i++) {
-                const currentNote: {id: number, note: string} = oldNotes[i]
-                if (currentNote.id === currentNoteId) {
-                    updatedArr.unshift({...currentNote, body: text});
-                }
-                else {
-                    updatedArr.push(currentNote);
-                }
-            }
-        })
-
-        return updatedArr;
+        const docRef = doc(db, "notes", currentNoteId);
+        await setDoc(docRef, {updatedAt: Date.now(), body: text}, {merge: true});
     }
     
 
@@ -89,7 +90,7 @@ export default function App(): React.JSX.Element {
                 className="split"
             >
                 <Sidebar
-                    notes={notes}
+                    notes={notesArrSortedByUpdatedAt}
                     currentNote={currentNote}
                     setCurrentNoteId={setCurrentNoteId}
                     newNote={createNewNote}
