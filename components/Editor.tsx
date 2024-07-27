@@ -15,8 +15,8 @@ export default function Editor({ currentNote, updateNote }): React.JSX.Element {
     return (
         <section className="pane editor">
             <ReactMde
-                value={currentNote.body}
-                onChange={updateNote}
+                value={tempNoteText}
+                onChange={setTempNoteText}
                 selectedTab={selectedTab}
                 onTabChange={setSelectedTab}
                 generateMarkdownPreview={(markdown) =>

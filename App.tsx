@@ -10,10 +10,11 @@ import { notesCollection, db } from "./firebase.tsx"
 
 
 export default function App(): React.JSX.Element {
-    const [notes, setNotes]: [notes: any, setNotes: any] = React.useState([])
-    const [currentNoteId, setCurrentNoteId]: any = React.useState("")
+    const [notes, setNotes]: [notes: any, setNotes: any] = React.useState([]);
+    const [currentNoteId, setCurrentNoteId]: any = React.useState("");
+    const [tempNoteText, setTempNoteText]: [tempNoteText: string, setTempNoteText: any] = React.useState("");
 
-    const currentNote = notes.find(note => note.id === currentNoteId) || notes[0]
+    const currentNote = notes.find(note => note.id === currentNoteId) || notes[0];
 
     // sort notes array by most recently updated
     const notesArrSortedByUpdatedAt: any[] = notes.sort((a, b) => b.updatedAt - a.updatedAt); 
@@ -28,7 +29,7 @@ export default function App(): React.JSX.Element {
             }))
             setNotes(notesArr);
         })
-        return unsubscribe
+        return unsubscribe;
     }, [])
 
     // Set the current note to the first if there isn't a note selected
@@ -36,7 +37,24 @@ export default function App(): React.JSX.Element {
         if (!currentNoteId) {
             setCurrentNoteId(notes[0]?.id);
         }
-    }, [notes])
+    }, [notes]);
+
+    // Whenever the currentNote changes, make our tempNote the currentNote's body text
+    React.useEffect(() => {
+        if (currentNote) {
+            setTempNoteText(currentNote.body);
+        }
+    }, [currentNote])
+
+    // Only update the Firestore db after the editor hasn't been "updated" in X amount of time (currently 3000 ms)
+    React.useEffect(() => {
+        const timeoutID: NodeJS.Timeout = setTimeout(() => {
+            if (tempNoteText !== currentNote.body) {
+                updateNote(tempNoteText);
+            }
+        }, 3000)
+        return () => clearTimeout(timeoutID);
+    }, [tempNoteText])
 
     // React.useEffect(() => {
     //     localStorage.setItem("notes", JSON.stringify(notes))
@@ -100,8 +118,8 @@ export default function App(): React.JSX.Element {
                     currentNoteId && 
                     notes.length > 0 &&
                     <Editor 
-                        currentNote={currentNote} 
-                        updateNote={updateNote} 
+                        tempNoteText={tempNoteText} 
+                        setTempNoteText={setTempNoteText} 
                     />
                 }
             </Split>
