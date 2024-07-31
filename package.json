@@ -1,6 +1,6 @@
 {
-  "name": "Scrim-s0g60phfp0",
-  "description": "https://v2.scrimba.com/learn-react-c0e/~04c",
+  "name": "notes",
+  "description": "",
   "scripts": {
     "watch": "webpack -w",
     "build": "webpack"
